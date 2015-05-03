@@ -17,3 +17,25 @@ dependencies {
     providedCompile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec:1.0.0.Final'
     providedCompile 'org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec:1.0.0.Final'
 }
+
+
+import groovy.xml.MarkupBuilder
+
+task(hello) << {
+    println "Will be generate"
+
+    def mb = new MarkupBuilder(new File("index.html").newPrintWriter())
+
+    mb.html() {
+	head() {
+	    title("This is the title")
+	}
+	
+	body() {
+	    div("class" : "main") {
+		p("this is the body")
+	    }
+	}
+    }
+
+}
