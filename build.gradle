@@ -45,10 +45,14 @@ class MyGradlePlugin implements Plugin<Project> {
   void apply(Project project) {
     project.afterEvaluate {
       println "  Project:" + project.name
-      project.configurations.each { conf ->
-        println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
-        println conf.incoming.files.files
-      }
+      
+      def conf = project.configurations['providedCompile']
+      println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
+      println conf.incoming.files.files
+      
+      conf = project.configurations['runtime']
+      println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
+      println conf.incoming.files.files
     }
   }
 
