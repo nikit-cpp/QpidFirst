@@ -47,7 +47,8 @@ class MyGradlePlugin implements Plugin<Project> {
     project.afterEvaluate {
       println "  Project:" + project.name
       
-      Configuration conf = project.configurations['compile']
+      String confName = 'compile'
+      Configuration conf = project.configurations[confName]
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
       conf = conf.copy() // remove unnesserary dependencies from super configuration
 
@@ -55,7 +56,13 @@ class MyGradlePlugin implements Plugin<Project> {
       // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
       Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
       for(ResolvedDependency a: allDependencies) {
-	println "* id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file } children=${a.children}"
+      Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
+      a.children.each{ if(it.configuration==confName) childrens.add(it) }
+      
+      println "* id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file }"
+      for(ResolvedDependency child: childrens) {
+	println "  * child=${child} ${child.moduleGroup} ${child.configuration}"
+      }
       }
       
       
