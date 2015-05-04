@@ -50,9 +50,16 @@ class MyGradlePlugin implements Plugin<Project> {
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
       println conf.incoming.files.files
       
+      println()
+      
       conf = project.configurations['runtime']
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
       println conf.incoming.files.files
+      
+      println "See ya"
+      println conf.incoming.resolutionResult.allDependencies{ DependencyResult depy -> 
+	println "${depy} FROM:${depy.from} REQUESTED:${depy.requested}"
+      }
     }
   }
 
