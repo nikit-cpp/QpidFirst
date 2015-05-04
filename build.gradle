@@ -46,7 +46,7 @@ class MyGradlePlugin implements Plugin<Project> {
     project.afterEvaluate {
       println "  Project:" + project.name
       project.configurations.each { conf ->
-        println "    Configuration: ${conf.name}"
+        println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
         conf.dependencies.each { dep ->
           println "      ${dep.group}:${dep.name}:${dep.version}"
         }
