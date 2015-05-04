@@ -58,9 +58,9 @@ class MyGradlePlugin implements Plugin<Project> {
       conf = project.configurations['runtime']
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
       // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
+      // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
       Set<ResolvedDependency> allArtifacts = conf.resolvedConfiguration.firstLevelModuleDependencies
       for(ResolvedDependency a: allArtifacts) {
-	//println "* ${a.moduleVersion.id} ${a.file}"
 	println "* id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file } children=${a.children}"
       }
       
