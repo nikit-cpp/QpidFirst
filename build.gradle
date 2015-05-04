@@ -46,21 +46,12 @@ class MyGradlePlugin implements Plugin<Project> {
     project.afterEvaluate {
       println "  Project:" + project.name
       
-      def conf = project.configurations['providedCompile']
-      println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
-      Set<ResolvedArtifact> providedArtifacts = conf.resolvedConfiguration.resolvedArtifacts
-      /*for(ResolvedArtifact a: providedArtifacts) {
-	println "* ${a.moduleVersion.id} ${a.file}"
-      }*/
-      
-      println()
-      
-      conf = project.configurations['runtime']
+      Configuration conf = project.configurations['compile']
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
       // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
       // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
-      Set<ResolvedDependency> allArtifacts = conf.resolvedConfiguration.firstLevelModuleDependencies
-      for(ResolvedDependency a: allArtifacts) {
+      Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
+      for(ResolvedDependency a: allDependencies) {
 	println "* id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file } children=${a.children}"
       }
       
