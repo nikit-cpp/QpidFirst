@@ -48,6 +48,8 @@ class MyGradlePlugin implements Plugin<Project> {
       
       Configuration conf = project.configurations['compile']
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
+      conf = conf.copy() // remove unnesserary dependencies from super configuration
+
       // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
       // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
       Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
