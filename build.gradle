@@ -48,18 +48,24 @@ class MyGradlePlugin implements Plugin<Project> {
       
       def conf = project.configurations['providedCompile']
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
-      Set<ResolvedArtifact> artifacts = conf.resolvedConfiguration.resolvedArtifacts
-      for(ResolvedArtifact a: artifacts) {
+      Set<ResolvedArtifact> providedArtifacts = conf.resolvedConfiguration.resolvedArtifacts
+      /*for(ResolvedArtifact a: providedArtifacts) {
 	println "* ${a.moduleVersion.id} ${a.file}"
-      }
+      }*/
       
       println()
       
       conf = project.configurations['runtime']
       println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
       // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
-      artifacts = conf.resolvedConfiguration.resolvedArtifacts
-      for(ResolvedArtifact a: artifacts) {
+      Set<ResolvedArtifact> allArtifacts = conf.resolvedConfiguration.resolvedArtifacts
+      /*for(ResolvedArtifact a: allArtifacts) {
+	println "* ${a.moduleVersion.id} ${a.file}"
+      }*/
+      
+      Set<ResolvedArtifact> onlyCompile = new HashSet<ResolvedArtifact>(allArtifacts)
+      onlyCompile.removeAll(providedArtifacts)
+      for(ResolvedArtifact a: onlyCompile) {
 	println "* ${a.moduleVersion.id} ${a.file}"
       }
     }
