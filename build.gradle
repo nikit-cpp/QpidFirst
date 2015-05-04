@@ -39,3 +39,21 @@ task(hello) << {
     }
 
 }
+
+class MyGradlePlugin implements Plugin<Project> {
+
+  void apply(Project project) {
+    project.afterEvaluate {
+      println "  Project:" + project.name
+      project.configurations.each { conf ->
+        println "    Configuration: ${conf.name}"
+        conf.allDependencies.each { dep ->
+          println "      ${dep.group}:${dep.name}:${dep.version}"
+        }
+      }
+    }
+  }
+
+}
+
+apply plugin: MyGradlePlugin
