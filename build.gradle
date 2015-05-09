@@ -28,46 +28,64 @@ task(hello) << {
     def mb = new MarkupBuilder(new File("index.html").newPrintWriter())
 
     mb.html() {
-	head() {
-	    title("This is the title")
-	}
-	
-	body() {
-	    div("class" : "main") {
-		p("this is the body")
-	    }
-	}
+        head() {
+            title("This is the title")
+        }
+
+        body() {
+            div("class": "main") {
+                p("this is the body")
+            }
+        }
     }
 
 }
 
 class MyGradlePlugin implements Plugin<Project> {
 
-  void apply(Project project) {
-    project.afterEvaluate {
-      println "  Project:" + project.name
-      
-      String confName = 'compile'
-      Configuration conf = project.configurations[confName]
-      println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
-      conf = conf.copy() // remove unnesserary dependencies from super configuration
+    void apply(Project project) {
+        project.afterEvaluate {
+            println "  Project:" + project.name
 
-      // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
-      // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
-      Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
-      for(ResolvedDependency a: allDependencies) {
-	Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
-	a.children.each{ if(it.configuration==confName) childrens.add(it) }
-	
-	println "* id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file }"
-	for(ResolvedDependency child: childrens) {
-	  println "  * child=${child} ${child.moduleGroup} ${child.configuration}"
-	}
-      }
-      
-      
+            String confName = 'compile'
+            Configuration conf = project.configurations[confName]
+            println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
+            conf = conf.copy() // remove unnesserary dependencies from super configuration
+
+            // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
+            // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
+            Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
+
+            processDependencies(allDependencies, 0, confName);
+
+            /*for (ResolvedDependency a : allDependencies) {
+                Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
+                a.children.each { if (it.configuration == confName) childrens.add(it) }
+
+                println "* id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
+                for (ResolvedDependency child : childrens) {
+                    println "  * child=${child} ${child.moduleGroup} ${child.configuration}"
+                }
+            }*/
+
+
+        }
     }
-  }
+
+    Set<ResolvedDependency> processDependencies(Set<ResolvedDependency> allDependencies, int level, String confName) {
+        level++
+        Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
+
+        for (ResolvedDependency a : allDependencies) {
+            a.children.each { if (it.configuration == confName) childrens.add(it) }
+
+            println " " + "*"*level + " id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
+
+            processDependencies(childrens, level, confName);
+        }
+
+        return childrens
+    }
 
 }
 
