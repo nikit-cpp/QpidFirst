@@ -21,26 +21,6 @@ dependencies {
 
 
 import groovy.xml.MarkupBuilder
-import org.gradle.api.AntBuilder
-
-task(hello) << {
-    println "Will be generate"
-
-    def mb = new MarkupBuilder(new File("index.html").newPrintWriter())
-
-    mb.html() {
-        head() {
-            title("This is the title")
-        }
-
-        body() {
-            div("class": "main") {
-                p("this is the body")
-            }
-        }
-    }
-
-}
 
 /*Создаётся и удаляется папка во время clean, кэп*/
 class MyGradlePlugin implements Plugin<Project> {
@@ -94,17 +74,31 @@ class MyGradlePlugin implements Plugin<Project> {
 
     void makeModule(ResolvedDependency a, int level) {
         File jar = a.moduleArtifacts.iterator()[0].file
-        println " " + "*"*level + " id=${a.module.id} file=${jar}"
-
         String group = a.module.id.group
         String name = a.module.id.name
         String version = a.module.id.version
+
+        println " " + "*"*level + " id=${a.module.id} file=${jar}"
 
         File jarFolder = new File(modules, group + File.separator + name + File.separator + version);
         jarFolder.mkdirs()
 
         GFileUtils.copyFile(jar, new File(jarFolder, jar.name))
 
+
+        def mb = new MarkupBuilder(new File(jarFolder, "module.xml").newPrintWriter())
+
+        mb.html() {
+            head() {
+                title("This is the title")
+            }
+
+            body() {
+                div("class": "main") {
+                    p("this is the body")
+                }
+            }
+        }
     }
 
 }
