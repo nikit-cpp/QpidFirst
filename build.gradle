@@ -72,19 +72,17 @@ class MyGradlePlugin implements Plugin<Project> {
         }
     }
 
-    Set<ResolvedDependency> processDependencies(Set<ResolvedDependency> allDependencies, int level, String confName) {
+    void processDependencies(Set<ResolvedDependency> allDependencies, int level, String confName) {
         level++
-        Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
 
         for (ResolvedDependency a : allDependencies) {
-            a.children.each { if (it.configuration == confName) childrens.add(it) }
-
             println " " + "*"*level + " id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
 
+            Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
+            a.children.each { if (it.configuration == confName) childrens.add(it) }
             processDependencies(childrens, level, confName);
         }
 
-        return childrens
     }
 
 }
