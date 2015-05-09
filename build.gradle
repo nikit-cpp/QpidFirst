@@ -76,13 +76,21 @@ class MyGradlePlugin implements Plugin<Project> {
         level++
 
         for (ResolvedDependency a : allDependencies) {
-            println " " + "*"*level + " id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
+            makeModule(a, level)
 
             Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
-            a.children.each { if (it.configuration == confName) childrens.add(it) }
+            a.children.each {
+                if (it.configuration == confName) {
+                    childrens.add(it)
+                }
+            }
             processDependencies(childrens, level, confName);
         }
 
+    }
+
+    void makeModule(ResolvedDependency a, int level) {
+        println " " + "*"*level + " id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
     }
 
 }
