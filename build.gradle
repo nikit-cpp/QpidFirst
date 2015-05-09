@@ -21,6 +21,7 @@ dependencies {
 
 
 import groovy.xml.MarkupBuilder
+import org.gradle.api.AntBuilder
 
 task(hello) << {
     println "Will be generate"
@@ -41,34 +42,36 @@ task(hello) << {
 
 }
 
+/*Создаётся и удаляется папка во время clean, кэп*/
 class MyGradlePlugin implements Plugin<Project> {
 
-    void apply(Project project) {
-        project.afterEvaluate {
-            println "  Project:" + project.name
+    File buildDir
+    File modules
 
+    void apply(Project project) {
+
+        project.afterEvaluate {
             String confName = 'compile'
+
+            println "Project:" + project.name
+
+            buildDir = project.buildDir
+            modules = new File(buildDir, 'modules')
+
+            println "WildFly modules will be stored in '" + modules + "'"
+            boolean modulesDirCreated = modules.mkdirs()
+            println "modules directory created = ${modulesDirCreated}"
+            println "modules directory exist = ${modules.exists()}"
+
             Configuration conf = project.configurations[confName]
             println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
-            conf = conf.copy() // remove unnesserary dependencies from super configuration
+            conf = conf.copy() // remove unnecessary dependencies from super configuration
 
             // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
             // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
             Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
 
             processDependencies(allDependencies, 0, confName);
-
-            /*for (ResolvedDependency a : allDependencies) {
-                Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
-                a.children.each { if (it.configuration == confName) childrens.add(it) }
-
-                println "* id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
-                for (ResolvedDependency child : childrens) {
-                    println "  * child=${child} ${child.moduleGroup} ${child.configuration}"
-                }
-            }*/
-
-
         }
     }
 
@@ -91,6 +94,16 @@ class MyGradlePlugin implements Plugin<Project> {
 
     void makeModule(ResolvedDependency a, int level) {
         println " " + "*"*level + " id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
+
+        String group = a.module.id.group
+        String name = a.module.id.name
+        String version = a.module.id.version
+
+        File jarFolder = new File(modules, group + File.separator + name + File.separator + version);
+        jarFolder.mkdirs()
+
+
+
     }
 
 }
