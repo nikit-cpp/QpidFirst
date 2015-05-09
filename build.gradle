@@ -93,7 +93,8 @@ class MyGradlePlugin implements Plugin<Project> {
     }
 
     void makeModule(ResolvedDependency a, int level) {
-        println " " + "*"*level + " id=${a.module.id} file=${a.moduleArtifacts.iterator()[0].file}"
+        File jar = a.moduleArtifacts.iterator()[0].file
+        println " " + "*"*level + " id=${a.module.id} file=${jar}"
 
         String group = a.module.id.group
         String name = a.module.id.name
@@ -102,7 +103,7 @@ class MyGradlePlugin implements Plugin<Project> {
         File jarFolder = new File(modules, group + File.separator + name + File.separator + version);
         jarFolder.mkdirs()
 
-
+        GFileUtils.copyFile(jar, new File(jarFolder, jar.name))
 
     }
 
