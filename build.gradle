@@ -89,7 +89,7 @@ class MyGradlePlugin implements Plugin<Project> {
 
         def mb = new MarkupBuilder(new File(jarFolder, "module.xml").newPrintWriter())
 
-        mb.module() {
+        mb.module("xmlns":"urn:jboss:module:1.3", "name":name, "slot":version) {
             resources() {
                 'resource-root'("path": jarDest.name)
             }
