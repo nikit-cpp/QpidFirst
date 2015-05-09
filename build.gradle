@@ -73,24 +73,25 @@ class MyGradlePlugin implements Plugin<Project> {
     }
 
     void makeModule(ResolvedDependency a, int level) {
-        File jar = a.moduleArtifacts.iterator()[0].file
+        File jarSrc = a.moduleArtifacts.iterator()[0].file
         String group = a.module.id.group
         String name = a.module.id.name
         String version = a.module.id.version
 
-        println " " + "*"*level + " id=${a.module.id} file=${jar}"
+        println " " + "*"*level + " id=${a.module.id} file=${jarSrc}"
 
         File jarFolder = new File(modules, group + File.separator + name + File.separator + version);
         jarFolder.mkdirs()
 
-        GFileUtils.copyFile(jar, new File(jarFolder, jar.name))
+        File jarDest = new File(jarFolder, jarSrc.name)
+        GFileUtils.copyFile(jarSrc, jarDest)
 
 
         def mb = new MarkupBuilder(new File(jarFolder, "module.xml").newPrintWriter())
 
-        mb.html() {
-            head() {
-                title("This is the title")
+        mb.module() {
+            resources() {
+                'resource-root'("path": jarDest.name)
             }
 
             body() {
