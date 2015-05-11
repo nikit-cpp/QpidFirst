@@ -80,12 +80,17 @@ class MyGradlePlugin implements Plugin<Project> {
             processChildDependencies(childrens, level, confName);
 
             // затем деплоим - сделано, чтобы порядок деплоя был таким: от конечных узлов дерева, не имеющих зависимостей, к родительским
-            File changedJar = addDependenciesToManifest(dep, childrens)
+            File changedJar = addChildDependenciesToManifest(dep)
             deployDeployment(changedJar)
         }
 
     }
 
+    /**
+     * Получает потомков dep, удаляет всех дублирующихся потомков от других конфигураций
+     * @param dep какая-то зависимость
+     * @return множество её потомков
+     */
     Set<ResolvedDependency> getChilderns(ResolvedDependency dep) {
         Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
         dep.children.each {
@@ -98,7 +103,7 @@ class MyGradlePlugin implements Plugin<Project> {
     }
 
     void printDependency(ResolvedDependency dep, int level) {
-        File jarSrc = dep.moduleArtifacts.iterator()[0].file
+        File jarSrc = getJarFromDependency(dep)
         String group = dep.module.id.group
         String name = dep.module.id.name
         String version = dep.module.id.version
@@ -106,8 +111,13 @@ class MyGradlePlugin implements Plugin<Project> {
         println " " + "*"*level + " id=${dep.module.id} file=${jarSrc}"
     }
 
-    File addDependenciesToManifest(ResolvedDependency dep, Set<ResolvedDependency> childrens) {
-        // TODO сделать обработку childrens
+    /**
+     * Копирует .jar зависимости в папку dependency-workspace
+     * Изменяет .jar: добавляет зависимостей-потомков в MANIFEST.MF
+     * @param dep
+     * @return
+     */
+    File addChildDependenciesToManifest(ResolvedDependency dep) {
         File jarSrc = getJarFromDependency(dep)
         String group = dep.module.id.group
         String name = dep.module.id.name
@@ -116,6 +126,9 @@ class MyGradlePlugin implements Plugin<Project> {
         File jarDest = new File(dependencyWorkspace, jarSrc.name)
         GFileUtils.copyFile(jarSrc, jarDest)
 
+        Set<ResolvedDependency> childrens = getChilderns(dep)
+
+        // Добавление в MANIFEST.MF зависимостей
         // https://github.com/jjzazuet/jgl/blob/master/jgl-demos/build.gradle
         projectInstance.ant.jar(destfile: jarDest, update: true) {
             delegate.manifest {
@@ -126,6 +139,11 @@ class MyGradlePlugin implements Plugin<Project> {
         return jarDest
     }
 
+    /**
+     * Преобразует ResolvedDependency в File
+     * @param dep
+     * @return
+     */
     File getJarFromDependency(ResolvedDependency dep) {
         return dep.moduleArtifacts.iterator()[0].file
     }
@@ -143,6 +161,10 @@ class MyGradlePlugin implements Plugin<Project> {
         return sb
     }
 
+    /**
+     * Один из вариантов деплоя
+     * @param jarSrc
+     */
     void deployDeployment(File jarSrc) {
         File wildflyDeploymentsFolder = new File("/home/nik/JavaInstruments/wildfly-8.2.0.Final/standalone/deployments/")
         File jarDest = new File(wildflyDeploymentsFolder, jarSrc.name)
