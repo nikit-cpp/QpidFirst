@@ -40,6 +40,7 @@ class MyGradlePlugin implements Plugin<Project> {
     File buildDir
     File dependencyWorkspace
     Project projectInstance
+    String confName = 'compile'
 
     void apply(Project project) {
         projectInstance = project
@@ -48,15 +49,12 @@ class MyGradlePlugin implements Plugin<Project> {
 
 
         project.task('modules') << {
-            String confName = 'compile'
 
             println "Project:" + project.name
-
-
-            println "WildFly modules will be stored in '" + dependencyWorkspace + "'"
+            println "WildFly dependencies will be stored in '" + dependencyWorkspace + "'"
             boolean modulesDirCreated = dependencyWorkspace.mkdirs()
-            println "modules directory created = ${modulesDirCreated}"
-            println "modules directory exist = ${dependencyWorkspace.exists()}"
+            println "dependencies directory created = ${modulesDirCreated}"
+            println "dependencies directory exist = ${dependencyWorkspace.exists()}"
 
             Configuration conf = project.configurations[confName]
             println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
@@ -75,20 +73,28 @@ class MyGradlePlugin implements Plugin<Project> {
 
         for (ResolvedDependency dep : allDependencies) {
             printDependency(dep, level)
-            Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
-            dep.children.each {
-                if (it.configuration == confName) {
-                    childrens.add(it)
-                }
-            }
+
+            Set<ResolvedDependency> childrens = getChilderns(dep)
+
             // сначала спускаемся на нижние уровни рекурсии
             processChildDependencies(childrens, level, confName);
 
-            // затем деплоим - сделано, чтобы порядок деплоя был таким: от конечных узлов дерева, не имеющих зависимостей к родительским
-            addDependenciesToManifest(dep, childrens)
-            // TODO deploy to folder / etc
+            // затем деплоим - сделано, чтобы порядок деплоя был таким: от конечных узлов дерева, не имеющих зависимостей, к родительским
+            File changedJar = addDependenciesToManifest(dep, childrens)
+            deployDeployment(changedJar)
         }
 
+    }
+
+    Set<ResolvedDependency> getChilderns(ResolvedDependency dep) {
+        Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
+        dep.children.each {
+            if (it.configuration == confName) {
+                childrens.add(it)
+            }
+        }
+
+        return childrens
     }
 
     void printDependency(ResolvedDependency dep, int level) {
@@ -102,14 +108,10 @@ class MyGradlePlugin implements Plugin<Project> {
 
     File addDependenciesToManifest(ResolvedDependency dep, Set<ResolvedDependency> childrens) {
         // TODO сделать обработку childrens
-        File jarSrc = dep.moduleArtifacts.iterator()[0].file
+        File jarSrc = getJarFromDependency(dep)
         String group = dep.module.id.group
         String name = dep.module.id.name
         String version = dep.module.id.version
-
-        File wildflyModulesFolder = /*new File(modules, group + File.separator + name + File.separator + version);*/
-                new File("/home/nik/JavaInstruments/wildfly-8.2.0.Final/standalone/deployments/")
-        //jarFolder.mkdirs()
 
         File jarDest = new File(dependencyWorkspace, jarSrc.name)
         GFileUtils.copyFile(jarSrc, jarDest)
@@ -117,12 +119,34 @@ class MyGradlePlugin implements Plugin<Project> {
         // https://github.com/jjzazuet/jgl/blob/master/jgl-demos/build.gradle
         projectInstance.ant.jar(destfile: jarDest, update: true) {
             delegate.manifest {
-                attribute(name: 'permissions', value: 'all-permissions')
-                attribute(name: 'codebase', value: jarSrc.name)
+                attribute(name: 'Dependencies', value: makeDependenciesString(childrens))
             }
         }
 
         return jarDest
+    }
+
+    File getJarFromDependency(ResolvedDependency dep) {
+        return dep.moduleArtifacts.iterator()[0].file
+    }
+
+    String makeDependenciesString(Set<ResolvedDependency> childrens){
+        StringBuilder sb = new StringBuilder()
+        childrens.each {
+            sb.append('deployment.')
+            sb.append(getJarFromDependency(it).name)
+            sb.append(' export')
+            if(childrens.size()>1) {
+                sb.append(', ')
+            }
+        }
+        return sb
+    }
+
+    void deployDeployment(File jarSrc) {
+        File wildflyDeploymentsFolder = new File("/home/nik/JavaInstruments/wildfly-8.2.0.Final/standalone/deployments/")
+        File jarDest = new File(wildflyDeploymentsFolder, jarSrc.name)
+        GFileUtils.copyFile(jarSrc, jarDest)
     }
 
 }
