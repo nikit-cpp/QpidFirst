@@ -23,6 +23,8 @@ artifacts {
     archives jar
 }
 
+apply plugin: MyGradlePlugin
+
 import groovy.xml.MarkupBuilder
 
 /*Создаётся и удаляется папка во время clean, кэп*/
@@ -46,6 +48,12 @@ class MyGradlePlugin implements Plugin<Project> {
             println "modules directory created = ${modulesDirCreated}"
             println "modules directory exist = ${modules.exists()}"
 
+            // Add the 'greeting' extension object
+            project.extensions.create("greeting", GreetingPluginExtension)
+            project.task('modules') << {
+                println "SUPERHELLO"
+            }
+
             Configuration conf = project.configurations[confName]
             println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
             conf = conf.copy() // remove unnecessary dependencies from super configuration
@@ -62,6 +70,7 @@ class MyGradlePlugin implements Plugin<Project> {
         level++
 
         for (ResolvedDependency a : allDependencies) {
+            print1(a, level)
             Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
             a.children.each {
                 if (it.configuration == confName) {
@@ -75,25 +84,39 @@ class MyGradlePlugin implements Plugin<Project> {
 
     }
 
-    void deploy1(ResolvedDependency a, int level) {
+    void print1(ResolvedDependency a, int level) {
         File jarSrc = a.moduleArtifacts.iterator()[0].file
         String group = a.module.id.group
         String name = a.module.id.name
         String version = a.module.id.version
 
         println " " + "*"*level + " id=${a.module.id} file=${jarSrc}"
+    }
 
-        File jarFolder = /*new File(modules, group + File.separator + name + File.separator + version);*/
+    void deploy1(ResolvedDependency a, int level) {
+        File jarSrc = a.moduleArtifacts.iterator()[0].file
+        String group = a.module.id.group
+        String name = a.module.id.name
+        String version = a.module.id.version
+
+        File wildflyModulesFolder = /*new File(modules, group + File.separator + name + File.separator + version);*/
                 new File("/home/nik/JavaInstruments/wildfly-8.2.0.Final/standalone/deployments/")
         //jarFolder.mkdirs()
 
-        File jarDest = new File(jarFolder, jarSrc.name)
+        File jarDest = new File(modules, jarSrc.name)
         GFileUtils.copyFile(jarSrc, jarDest)
+
+
     }
 
 }
 
-apply plugin: MyGradlePlugin
+class GreetingPluginExtension {
+    def String message = 'Hello from GreetingPlugin'
+}
+
+
+
 
 jar {
     manifest {
