@@ -128,14 +128,15 @@ class MyGradlePlugin implements Plugin<Project> {
 
         Set<ResolvedDependency> childrens = getChilderns(dep)
 
-        // Добавление в MANIFEST.MF зависимостей
-        // https://github.com/jjzazuet/jgl/blob/master/jgl-demos/build.gradle
-        projectInstance.ant.jar(destfile: jarDest, update: true) {
-            delegate.manifest {
-                attribute(name: 'Dependencies', value: makeDependenciesString(childrens))
+        if(childrens.size() > 0) {
+            // Добавление в MANIFEST.MF зависимостей
+            // https://github.com/jjzazuet/jgl/blob/master/jgl-demos/build.gradle
+            projectInstance.ant.jar(destfile: jarDest, update: true) {
+                delegate.manifest {
+                    attribute(name: 'Dependencies', value: makeDependenciesString(childrens))
+                }
             }
         }
-
         return jarDest
     }
 
@@ -154,10 +155,11 @@ class MyGradlePlugin implements Plugin<Project> {
             sb.append('deployment.')
             sb.append(getJarFromDependency(it).name)
             sb.append(' export')
-            if(childrens.size()>1) {
+            if(childrens.size() > 1) {
                 sb.append(', ')
             }
         }
+
         return sb
     }
 
