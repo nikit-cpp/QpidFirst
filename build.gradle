@@ -36,6 +36,7 @@ apply plugin: WildflyGradlePlugin
 
 wildfly {
     wildflyHome = file('/home/nik/JavaInstruments/wildfly-8.2.0.Final/')
+    printTree = true
 }
 
 
@@ -45,27 +46,24 @@ class WildflyGradlePlugin implements Plugin<Project> {
     File dependencyWorkspace
     Project projectInstance
     String confName = 'compile'
+    boolean isDeploy
+    boolean printDeployOrder
 
     void apply(Project project) {
         projectInstance = project
         buildDir = project.buildDir
         dependencyWorkspace = new File(buildDir, 'dependency-workspace')
+        dependencyWorkspace.mkdirs()
         Configuration conf = project.configurations[confName]
+        conf = conf.copy() // remove unnecessary dependencies from super configuration
+
+        println "WildFly dependencies will be stored in '" + dependencyWorkspace + "'"
 
         // Add the 'greeting' extension object
         project.extensions.create("wildfly", WildflyPluginExtension)
 
-        project.task('deployModules') << {
-
-            println "Project:" + project.name
-            println "WildFly dependencies will be stored in '" + dependencyWorkspace + "'"
-            boolean modulesDirCreated = dependencyWorkspace.mkdirs()
-            println "dependencies directory created = ${modulesDirCreated}"
-            println "dependencies directory exist = ${dependencyWorkspace.exists()}"
-
-            println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
-            conf = conf.copy() // remove unnecessary dependencies from super configuration
-
+        project.task('deployDependencies') << {
+            isDeploy = true
             // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedConfiguration.html
             // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
             Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
@@ -73,8 +71,13 @@ class WildflyGradlePlugin implements Plugin<Project> {
             processChildDependencies(allDependencies, 0);
         }
 
-        project.task('hello') << {
-            println "${project.wildfly.message} from ${project.wildfly.greeter}"
+        project.task('prepareDependencies') << {
+            isDeploy = false
+            println "Dependent jars must be deployed as below order:"
+            printDeployOrder = true
+            projectInstance.wildfly.printTree = false
+            Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
+            processChildDependencies(allDependencies, 0);
         }
     }
 
@@ -82,7 +85,9 @@ class WildflyGradlePlugin implements Plugin<Project> {
         level++
 
         for (ResolvedDependency dep : allDependencies) {
-            printDependency(dep, level)
+            if(projectInstance.wildfly.printTree){
+                printDependency(dep, level)
+            }
 
             Set<ResolvedDependency> childrens = getChilderns(dep)
 
@@ -91,7 +96,12 @@ class WildflyGradlePlugin implements Plugin<Project> {
 
             // затем деплоим - сделано, чтобы порядок деплоя был таким: от конечных узлов дерева, не имеющих зависимостей, к родительским
             File changedJar = addChildDependenciesToManifest(dep)
-            deployDeployment(changedJar)
+            if(isDeploy) {
+                deployDeployment(changedJar)
+            }
+            if(printDeployOrder){
+                printDeployment(changedJar)
+            }
         }
 
     }
@@ -119,6 +129,10 @@ class WildflyGradlePlugin implements Plugin<Project> {
         String version = dep.module.id.version
 
         println " " + "*"*level + " id=${dep.module.id} file=${jarSrc}"
+    }
+
+    void printDeployment(File dep) {
+        println " " + "#" + " ${dep}"
     }
 
     /**
@@ -187,4 +201,5 @@ class WildflyGradlePlugin implements Plugin<Project> {
 
 class WildflyPluginExtension {
     File wildflyHome
+    boolean printTree
 }
