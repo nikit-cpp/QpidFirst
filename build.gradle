@@ -51,28 +51,28 @@ class MyGradlePlugin implements Plugin<Project> {
             // http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/ResolvedDependency.html
             Set<ResolvedDependency> allDependencies = conf.resolvedConfiguration.firstLevelModuleDependencies
 
-            processDependencies(allDependencies, 0, confName);
+            processChildDependencies(allDependencies, 0, confName);
         }
     }
 
-    void processDependencies(Set<ResolvedDependency> allDependencies, int level, String confName) {
+    void processChildDependencies(Set<ResolvedDependency> allDependencies, int level, String confName) {
         level++
 
         for (ResolvedDependency a : allDependencies) {
-            makeModule(a, level)
-
             Set<ResolvedDependency> childrens = new HashSet<ResolvedDependency>();
             a.children.each {
                 if (it.configuration == confName) {
                     childrens.add(it)
                 }
             }
-            processDependencies(childrens, level, confName);
+            processChildDependencies(childrens, level, confName);
+
+            deploy1(a, level)
         }
 
     }
 
-    void makeModule(ResolvedDependency a, int level) {
+    void deploy1(ResolvedDependency a, int level) {
         File jarSrc = a.moduleArtifacts.iterator()[0].file
         String group = a.module.id.group
         String name = a.module.id.name
@@ -80,26 +80,12 @@ class MyGradlePlugin implements Plugin<Project> {
 
         println " " + "*"*level + " id=${a.module.id} file=${jarSrc}"
 
-        File jarFolder = new File(modules, group + File.separator + name + File.separator + version);
-        jarFolder.mkdirs()
+        File jarFolder = /*new File(modules, group + File.separator + name + File.separator + version);*/
+                new File("/home/nik/JavaInstruments/wildfly-8.2.0.Final/standalone/deployments/")
+        //jarFolder.mkdirs()
 
         File jarDest = new File(jarFolder, jarSrc.name)
         GFileUtils.copyFile(jarSrc, jarDest)
-
-
-        def mb = new MarkupBuilder(new File(jarFolder, "module.xml").newPrintWriter())
-
-        mb.module("xmlns":"urn:jboss:module:1.3", "name":name, "slot":version) {
-            resources() {
-                'resource-root'("path": jarDest.name)
-            }
-
-            body() {
-                div("class": "main") {
-                    p("this is the body")
-                }
-            }
-        }
     }
 
 }
