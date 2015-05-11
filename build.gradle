@@ -32,8 +32,10 @@ class MyGradlePlugin implements Plugin<Project> {
 
     File buildDir
     File modules
+    Project projectInstance
 
     void apply(Project project) {
+        projectInstance = project
 
         project.afterEvaluate {
             String confName = 'compile'
@@ -50,9 +52,6 @@ class MyGradlePlugin implements Plugin<Project> {
 
             // Add the 'greeting' extension object
             project.extensions.create("greeting", GreetingPluginExtension)
-            project.task('modules') << {
-                println "SUPERHELLO"
-            }
 
             Configuration conf = project.configurations[confName]
             println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
@@ -106,6 +105,12 @@ class MyGradlePlugin implements Plugin<Project> {
         File jarDest = new File(modules, jarSrc.name)
         GFileUtils.copyFile(jarSrc, jarDest)
 
+        projectInstance.ant.jar(destfile: jarDest, update: true) {
+            delegate.manifest {
+                attribute(name: 'permissions', value: 'all-permissions')
+                attribute(name: 'codebase', value: jarSrc.name)
+            }
+        }
 
     }
 
