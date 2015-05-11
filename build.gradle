@@ -19,6 +19,9 @@ dependencies {
     compile 'com.github.fernandospr:java-mpns:0.0.3'
 }
 
+artifacts {
+    archives jar
+}
 
 import groovy.xml.MarkupBuilder
 
