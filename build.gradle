@@ -99,8 +99,7 @@ jar {
     manifest {
         attributes("Dependencies":
                 "deployment.qpid-client-0.32.jar, " +
-                "deployment.java-mpns-0.0.3.jar, " +
-                "deployment.qpid-common-0.32.jar"
+                "deployment.java-mpns-0.0.3.jar "
         )
     }
 }
