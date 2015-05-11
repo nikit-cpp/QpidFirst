@@ -78,7 +78,7 @@ class MyGradlePlugin implements Plugin<Project> {
             }
             processChildDependencies(childrens, level, confName);
 
-            deploy1(a, level)
+            addDependenciesToManifest(a, level)
         }
 
     }
@@ -92,7 +92,7 @@ class MyGradlePlugin implements Plugin<Project> {
         println " " + "*"*level + " id=${a.module.id} file=${jarSrc}"
     }
 
-    void deploy1(ResolvedDependency a, int level) {
+    File addDependenciesToManifest(ResolvedDependency a, int level) {
         File jarSrc = a.moduleArtifacts.iterator()[0].file
         String group = a.module.id.group
         String name = a.module.id.name
@@ -105,6 +105,7 @@ class MyGradlePlugin implements Plugin<Project> {
         File jarDest = new File(modules, jarSrc.name)
         GFileUtils.copyFile(jarSrc, jarDest)
 
+        // https://github.com/jjzazuet/jgl/blob/master/jgl-demos/build.gradle
         projectInstance.ant.jar(destfile: jarDest, update: true) {
             delegate.manifest {
                 attribute(name: 'permissions', value: 'all-permissions')
@@ -112,6 +113,7 @@ class MyGradlePlugin implements Plugin<Project> {
             }
         }
 
+        return jarDest
     }
 
 }
