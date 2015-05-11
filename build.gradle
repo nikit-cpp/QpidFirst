@@ -95,6 +95,12 @@ class MyGradlePlugin implements Plugin<Project> {
 
 apply plugin: MyGradlePlugin
 
-task listJars << {
-    configurations.runtime.each { File file -> println file.name }
+jar {
+    manifest {
+        attributes("Dependencies":
+                "deployment.qpid-client-0.32.jar, " +
+                "deployment.java-mpns-0.0.3.jar, " +
+                "deployment.qpid-common-0.32.jar"
+        )
+    }
 }
