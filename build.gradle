@@ -36,22 +36,20 @@ class MyGradlePlugin implements Plugin<Project> {
 
     void apply(Project project) {
         projectInstance = project
+        buildDir = project.buildDir
+        modules = new File(buildDir, 'modules')
 
-        project.afterEvaluate {
+
+        project.task('modules') << {
             String confName = 'compile'
 
             println "Project:" + project.name
 
-            buildDir = project.buildDir
-            modules = new File(buildDir, 'modules')
 
             println "WildFly modules will be stored in '" + modules + "'"
             boolean modulesDirCreated = modules.mkdirs()
             println "modules directory created = ${modulesDirCreated}"
             println "modules directory exist = ${modules.exists()}"
-
-            // Add the 'greeting' extension object
-            project.extensions.create("greeting", GreetingPluginExtension)
 
             Configuration conf = project.configurations[confName]
             println "    Configuration: ${conf.name} < ${conf.extendsFrom}"
@@ -117,11 +115,6 @@ class MyGradlePlugin implements Plugin<Project> {
     }
 
 }
-
-class GreetingPluginExtension {
-    def String message = 'Hello from GreetingPlugin'
-}
-
 
 
 
