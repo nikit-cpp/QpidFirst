@@ -2,6 +2,7 @@ package mu.superpackage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import supaerpack.Printer;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -32,6 +33,7 @@ public class OurBean {
 
     @PostConstruct
     private void init() {
+        logger.info(Printer.getName());
 
         try {
             // initalizing
