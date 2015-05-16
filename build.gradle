@@ -10,7 +10,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'gradle.plugin.com.github.nikit.cpp:wildflyPlugin:0.5.7'
+        // classpath 'gradle.plugin.com.github.nikit.cpp:wildflyPlugin:0.5.8'
+        classpath 'com.github.nikit.cpp:wildflyPlugin:0.5.12'
     }
 }
 
@@ -55,5 +56,5 @@ task fatJar(type: Jar) {
 apply plugin: "com.github.nikit.cpp.wildflyPlugin"
 wildfly {
     wildflyHome = file('/home/nik/JavaInstruments/wildfly-8.2.0.Final/')
-    printTree = true
+    printOrder = true
 }
