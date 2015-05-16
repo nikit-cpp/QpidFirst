@@ -1,5 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'war'
+// apply plugin: 'war'
 
 buildscript {
     repositories {
@@ -11,13 +11,20 @@ buildscript {
     }
     dependencies {
         // classpath 'gradle.plugin.com.github.nikit.cpp:wildflyPlugin:0.5.8'
-        classpath 'com.github.nikit.cpp:wildflyPlugin:0.5.12'
+        classpath 'com.github.nikit.cpp:wildflyPlugin:0.5.15'
     }
 }
 
 repositories {
     mavenCentral()
     mavenLocal()
+}
+
+apply plugin: "com.github.nikit.cpp.wildflyPlugin"
+wildfly {
+    wildflyHome = file('/home/nik/JavaInstruments/wildfly-8.2.0.Final/')
+    printOrder = true
+    updateManifest = true
 }
 
 dependencies {
@@ -31,18 +38,18 @@ artifacts {
     archives jar
 }
 
-jar {
+/*jar {
     manifest {
         attributes("Dependencies":
                 "deployment.qpid-client-0.32.jar, " +
                         "deployment.java-mpns-0.0.3.jar "
         )
     }
-}
+}*/
 
 version = '1.0'
 //create a single Jar with all dependencies
-task fatJar(type: Jar) {
+/*task fatJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'Gradle Jar File Example',
                 'Implementation-Version': version,
@@ -53,8 +60,4 @@ task fatJar(type: Jar) {
     with jar
 }
 
-apply plugin: "com.github.nikit.cpp.wildflyPlugin"
-wildfly {
-    wildflyHome = file('/home/nik/JavaInstruments/wildfly-8.2.0.Final/')
-    printOrder = true
-}
+*/
