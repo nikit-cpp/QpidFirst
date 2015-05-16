@@ -39,6 +39,19 @@ jar {
     }
 }
 
+version = '1.0'
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File Example',
+                'Implementation-Version': version,
+                'Main-Class': 'mu.superpackage.Runner'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 apply plugin: "com.github.nikit.cpp.wildflyPlugin"
 wildfly {
     wildflyHome = file('/home/nik/JavaInstruments/wildfly-8.2.0.Final/')
