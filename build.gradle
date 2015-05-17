@@ -10,8 +10,8 @@ buildscript {
         }
     }
     dependencies {
-        // classpath 'gradle.plugin.com.github.nikit.cpp:wildflyPlugin:0.5.8'
-        classpath 'com.github.nikit.cpp:wildflyPlugin:0.6'
+        //classpath 'gradle.plugin.com.github.nikit.cpp:wildflyPlugin:0.8'
+        classpath 'com.github.nikit.cpp:wildflyPlugin:0.8'
     }
 }
 
@@ -22,7 +22,7 @@ repositories {
 
 apply plugin: "com.github.nikit.cpp.wildflyPlugin"
 wildfly {
-    wildflyHome = file('/home/nik/JavaInstruments/wildfly-8.2.0.Final/')
+    wildflyPath = '/home/nik/JavaInstruments/wildfly-8.2.0.Final/standalone/deployments/'
     printOrder = true
     addFirstLevelDependenciesToManifest = true
 }
