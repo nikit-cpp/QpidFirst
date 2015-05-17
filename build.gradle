@@ -1,4 +1,4 @@
-apply plugin: 'java'
+/*apply plugin: 'java'
 // apply plugin: 'war'
 
 buildscript {
@@ -14,13 +14,22 @@ buildscript {
         classpath 'com.github.nikit.cpp:wildflyPlugin:0.6'
     }
 }
+apply plugin: "com.github.nikit.cpp.wildflyPlugin"
+
+*/
+
+plugins {
+    id "java"
+    id "com.github.nikit.cpp.wildflyPlugin" version "0.6"
+}
+
+version = '1.0'
 
 repositories {
     mavenCentral()
     mavenLocal()
 }
 
-apply plugin: "com.github.nikit.cpp.wildflyPlugin"
 wildfly {
     wildflyHome = file('/home/nik/JavaInstruments/wildfly-8.2.0.Final/')
     printOrder = true
@@ -48,7 +57,6 @@ artifacts {
     }
 }*/
 
-version = '1.0'
 //create a single Jar with all dependencies
 /*task fatJar(type: Jar) {
     manifest {
