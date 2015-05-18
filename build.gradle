@@ -1,5 +1,5 @@
 apply plugin: 'java'
-// apply plugin: 'war'
+apply plugin: 'war'
 
 buildscript {
     repositories {
@@ -10,8 +10,8 @@ buildscript {
         }
     }
     dependencies {
-        //classpath 'gradle.plugin.com.github.nikit.cpp:wildflyPlugin:0.8'
-        classpath 'com.github.nikit.cpp:wildflyPlugin:0.8'
+        //classpath 'gradle.plugin.com.github.nikit.cpp:wildflyPlugin:0.8.1' // gradle plugins
+        classpath 'com.github.nikit.cpp:wildflyPlugin:0.8.2' // maven local
     }
 }
 
@@ -22,8 +22,9 @@ repositories {
 
 apply plugin: "com.github.nikit.cpp.wildflyPlugin"
 wildfly {
-    wildflyPath = '/home/nik/JavaInstruments/wildfly-8.2.0.Final/standalone/deployments/'
+    deploymentDestination = file('${WILDFLY_HOME}/standalone/deployments/')
     printOrder = true
+    printTree = false
     addFirstLevelDependenciesToManifest = true
 }
 
@@ -32,7 +33,7 @@ dependencies {
     providedCompile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec:1.0.0.Final'
     providedCompile 'org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec:1.0.0.Final'
     compile 'com.github.fernandospr:java-mpns:0.0.3'
-    compile 'com.github.nikit.cpp:gradle-child:1.0'
+    compile 'com.github.nikit.cpp:gradle-child:2.0'
 }
 
 artifacts {
